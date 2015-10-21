@@ -1,0 +1,4 @@
+lisp-implementation-type: International Allegro CL Enterprise Edition
+lisp-implementation-version: 10.0.beta.27 [64-bit Mac OS X (Intel) *SMP*] (Jul 29, 2015 2:13)
+machine-type: 64-bit x86-64
+machine-version: x86_64

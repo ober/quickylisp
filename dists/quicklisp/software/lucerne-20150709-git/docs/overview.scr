@@ -1,0 +1,43 @@
+@begin(section)
+@title(Overview)
+
+Lucerne is a web application framework built on
+@link[uri=http://clacklisp.org/](Clack).
+
+@begin(section)
+@title(Features)
+
+@begin(deflist)
+
+@term(Built on Clack)
+@def(Lucerne uses @link[uri=http://clacklisp.org/](Clack), an HTTP server
+abstraction, which enables it to use any server backend supported by Clack
+@l(ndash) from Hunchentoot the the very fast
+@link[uri="https://github.com/fukamachi/woo"](Woo).)
+
+@term(Inspired by Flask)
+@def(@link[uri="http://flask.pocoo.org/"](Flask) is a small and flexible web framework for Python, and Lucerne borrows most of its design concepts from it.)
+
+@term(Extensively Tested)
+@def(Lucerne maintains
+@link[uri="https://coveralls.io/r/eudoxia0/lucerne?branch=master"](100% code
+coverage). Everything including the examples is covered by the tests.)
+
+@term(Django-like Templates)
+@def(Lucerne uses @link[uri="https://github.com/mmontone/djula"](Djula), a clone
+of the @link[uri="https://www.djangoproject.com/"](Django) template engine.)
+
+@term(Easy to Set Up)
+@def(Lucerne includes a project skeleton generator, which takes care of setting
+up the structure of a basic application so you can start coding right away.)
+
+@term(Built-in Web Debugger)
+@def(Lucerne comes with
+@link[uri="https://github.com/eudoxia0/clack-errors"](clack-errors), to make
+debugging server-side errors in development easier.)
+
+@end(deflist)
+
+@end(section)
+
+@end(section)

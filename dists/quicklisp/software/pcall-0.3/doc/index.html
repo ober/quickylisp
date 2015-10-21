@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <title>PCall</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  </head>
+
+  <body>
+
+    <h1>PCall</h1>
+
+    <p>PCall, or parallel call, is a Common Lisp library intended to
+    simplify 'result-oriented' parallelism. It uses a thread pool to
+    concurrently run small computations without spawning a new thread.
+    This makes it possible to exploit multiple cores without much
+    extra fuss.</p>
+
+    <p>Note that there exists a fork of PCall, <a
+    href="http://common-lisp.net/project/eager-future/">Eager
+    Future</a>, which is (at this time) more actively developed.</p>
+
+    <h2>Contents</h2>
+
+    <ol>
+      <li><a href="#news">News</a></li>
+      <li><a href="#license">License</a></li>
+      <li><a href="#download">Download and installation</a></li>
+      <li><a href="#support">Support and mailing lists</a></li>
+      <li><a href="#quickstart">Quickstart</a></li>
+      <li><a href="#reference">Reference</a></li>
+    </ol>
+
+    <h2 id="news">News</h2>
+
+    <p class="news"><em>03-09-2009:</em> <a
+    href="http://marijn.haverbeke.nl/pcall/pcall-0.3.tgz">Version
+    0.3</a>: Release some changes that have been sitting in the
+    repository for months now. <a
+    href="#select-one"><code>select-one</code></a> and <a
+    href="#set-worker-environment">worker environments</a> have been
+    added.</p>
+
+    <p class="news"><em>26-01-2009:</em> <a
+    href="http://marijn.haverbeke.nl/pcall/pcall-0.2.tgz">Version
+    0.2</a>: Since there suddenly is some increased attention for the
+    library, I'm releasing the current code as 0.2. Still beta-ish,
+    but seems to work. This version adds <a
+    href="#with-local-thread-pool"><code>with-local-thread-pool</code></a>.</p>
+
+    <p class="news"><em>06-06-2008:</em> <a
+    href="http://marijn.haverbeke.nl/pcall/pcall-0.1.tgz">Version
+    0.1</a>: The first release. Should be considered beta. Any testing
+    and <a href="#support">feedback</a> is appreciated.</p>
+
+    <p class="news"><em>05-06-2008:</em> Added a <a
+    href="background.html">background article</a> with some related
+    thoughts.</p>
+
+    <h2 id="license">License</h2>
+
+    <p>PCall is released under a zlib-like license, which
+    approximately means you can use the code in whatever way you like,
+    except for passing it off as your own or releasing a modified
+    version without indication that it is not the original. See the
+    LICENSE file in the distribution.</p>
+
+    <h2 id="download">Download and installation</h2>
+
+    <p>PCall depends on <a
+    href="http://common-lisp.net/project/bordeaux-threads">bordeaux-threads</a>,
+    and on <a
+    href="http://common-lisp.net/project/bese/FiveAM.html">fiveam</a>
+    for the test suite.</p>
+
+    <p>The latest release of PCall can be downloaded from <a
+    href="http://marijn.haverbeke.nl/pcall/pcall.tgz">http://marijn.haverbeke.nl/pcall/pcall.tgz</a>,
+    or installed with <a
+    href="http://www.cliki.net/ASDF-Install">asdf-install</a>.</p>
+
+    <p>A <a href="http://www.darcs.net/">darcs</a> repository with the
+    most recent changes can be checked out with:</p>
+
+    <pre>&gt; darcs get http://marijn.haverbeke.nl/pcall/pcall</pre>
+
+    <p>Or you can look at the <a
+    href="http://marijn.haverbeke.nl/darcsweb.cgi?r=pcall">repository</a>
+    through darcsweb.</p>
+
+    <h2 id="support">Support and mailing lists</h2>
+
+    <p>There is a <a
+    href="http://groups.google.com/group/pcall">Google group</a> for
+    any discussion relating this project. Also feel free to drop me an
+    e-mail directly: <a href="mailto:marijnh@gmail.com">Marijn
+    Haverbeke</a>.</p>
+
+    <h2 id="quickstart">Quickstart</h2>
+
+    <p>PCall is a rather simple library. There are only three basic
+    concepts that you have to come to grips with:</p>
+
+    <ul>
+      <li>The thread pool, which mostly manages itself, but whose
+      existence you should be aware of. It starts inactive, but as
+      soon as a task is created, it is initialised. See <a
+      href="#thread-pool-size"><code>thread-pool-size</code></a> and
+      <a href="#finish-tasks"><code>finish-tasks</code></a> for ways
+      in which it can be managed.</li>
+
+      <li>Creating tasks, done through <a
+      href="#pcall"><code>pcall</code></a> and <a
+      href="#pexec"><code>pexec</code></a>. This creates a computation
+      that may be parallelised, and enqueues it. When given the
+      chance, the threads in the thread pool will take such a task,
+      execute it, and store its result.</li>
+
+      <li>Joining tasks (<a href="#join"><code>join</code></a>), which
+      extracts the value from a computation. This blocks when the task
+      is still running. If it has not yet started, the joining thread
+      will claim and execute the task itself.</li>
+    </ul>
+
+    <p>Imagine that we have this wonderful algorithm for computing
+    (once again) Fibonnaci numbers:</p>
+
+    <pre class="code">
+(defun fib (n)
+  (if (> n 2)
+      (+ (fib (- n 1)) (fib (- n 2)))
+      1))
+
+(time (fib 40))</pre>
+
+    <p>Depending on your machine, this might take some 2 to 10
+    seconds. We don't have that kind of patience. You can see that
+    this algorithm is entirely optimal, so our only option, it seems,
+    is to use more hardware &#x2015; or make better use of the
+    hardware we have:</p>
+
+    <pre class="code">
+(time (let ((f39 (pexec (fib 39)))
+            (f38 (pexec (fib 38))))
+        (+ (join f39) (join f38))))</pre>
+
+    <p>On my 2-core machine, that speeds things up by about a third
+    &#x2015; which makes sense, since computing fib(39) is about twice
+    as much work as computing fib(38). A nicer way to write the same
+    thing is:</p>
+
+    <pre class="code">
+(time (plet ((f39 (fib 39))
+             (f38 (fib 38)))
+        (+ f39 f38)))</pre>
+
+    <p><a href="#plet"><code>plet</code></a> takes care of the
+    wrapping and joining in cases like this. Why do we need the let
+    anyway? You could try this:</p>
+
+    <pre class="code">
+(time (+ (join (pexec (fib 39))) (join (pexec (fib 38)))))</pre>
+
+    <p>... but that won't buy you anything. The tasks have to both be
+    created before you join the first one, or the second task will not
+    exist when the first one runs, and thus won't be able to run
+    concurrently with it.</p>
+
+    <p>You might be tempted to write something like this:</p>
+
+    <pre class="code">
+(defun pfib (n)
+  (if (> n 2)
+      (plet ((a (pfib (- n 1)))
+             (b (pfib (- n 2))))
+        (+ a b))
+      1))</pre>
+
+    <p>... but don't. There is some overhead associated with creating
+    and executing tasks, and for a function like naive-fibonacci,
+    which recurses a zillion times even for small inputs, this will
+    radically slow your algorithm down. A parallel mapping function,
+    as shown below, works great for mapping a relatively heavy
+    function over a list of limited length, but is no use for mapping
+    <code>1+</code> over a million elements.</p>
+
+    <pre class="code">
+(defun pmapcar (f list)
+  (let ((result (mapcar (lambda (n) (pexec (funcall f n))) list)))
+    (map-into result #'join result)))
+
+(defvar *numbers* (loop :for i :from 0 :below 30 :collect i))
+(time (mapcar #'fib i))
+(time (pmapcar #'fib i))</pre>
+
+    <p>Note that joining tasks is not required. When you do not care
+    about the result of a computation, you can just spawn the task and
+    leave it at that.</p>
+
+    <p>As a final note, PCall can also be used when a program is not
+    CPU-bound, but needs to do some tasks that are hampered by other
+    bottlenecks (network latency, disk speed). If they can be executed
+    in parallel, you can have the thread pool run them. In the
+    following example, the second version runs three times faster on
+    my machine:</p>
+
+    <pre class="code">
+(defvar *urls* '("http://marijn.haverbeke.nl/pcall" "http://common-lisp.net"
+                 "http://eloquentjavascript.net" "http://xkcd.com"))
+
+(time (mapc 'drakma:http-request *urls*))
+(time (mapc 'join (mapcar (lambda (url) (pexec (drakma:http-request url))) *urls*)))</pre>
+
+    <p>In some applications, doing multiple database queries at the
+    same time could really help. You might need to increase the size
+    of the thread pool in such a situation, since some threads will be
+    sitting idle, waiting on a socket.</p>
+
+    <h2 id="reference">Reference</h2>
+
+    <p class="def" id="pcall">
+      <span>function</span>
+      pcall (thunk)
+      <br/>&#8594; task
+    </p>
+
+    <p class="desc">Create a task that will call the given
+    argumentless function.</p>
+
+    <p class="def" id="pexec">
+      <span>macro</span>
+      pexec (&amp;body body)
+      <br/>&#8594; task
+    </p>
+
+    <p class="desc">A shorthand for <code>(<a href="#pcall">pcall</a>
+    (lambda () ...))</code>.</p>
+
+    <p class="def" id="plet">
+      <span>macro</span>
+      plet ((bindings) &amp;body body)
+    </p>
+
+    <p class="desc">Follows the behaviour of <code>let</code>, but
+    wraps every bound value into a <a
+    href="#pexec"><code>pexec</code></a> form, and automatically adds
+    <a href="#join"><code>join</code></a> calls around uses of the
+    bound variables.</p>
+
+    <p class="def" id="join">
+      <span>function</span>
+      join (task)
+      <br/>&#8594; result
+    </p>
+
+    <p class="desc">Waits for the given task to finish, and then
+    returns any values the task produced. When executing the task
+    raised an uncaught error, this error will be raised when joining
+    the task. (Note that this re-raising might cause problems with
+    condition handlers, which might not be active in the worker
+    threads. If you are using handlers, take extra care, and look at
+    <a
+    href="#set-worker-environment"><code>set-worker-environment</code></a>.)
+    When, at the moment <code>join</code> is called, the task has not
+    been assigned to any thread, the joining thread will execute the
+    task itself. (Note that this makes the dynamic environment in
+    which the task runs unpredictable.) A task may be joined multiple
+    times. Subsequent joins will again return the values, without
+    re-executing the task.</p>
+
+    <p class="def" id="select-one">
+      <span>function</span>
+      select-one (&amp;rest tasks)
+    </p>
+
+    <p class="desc">Waits until at least one of the given tasks is
+    finished and then returns that task.</p>
+
+    <p class="def" id="done-p">
+      <span>function</span>
+      done-p (task)
+      <br/>&#8594; boolean
+    </p>
+
+    <p class="desc">Tests whether a task has been executed.</p>
+
+    <p class="def" id="thread-pool-size">
+      <span>function</span>
+      thread-pool-size ()
+    </p>
+
+    <p class="desc">Returns the current size of the thread pool. Also
+    supports <code>setf</code> to change this size. The default value
+    is <code>3</code>.</p>
+
+    <p class="def" id="set-worker-environment">
+      <span>function</span>
+      set-worker-environment (wrapper)
+    </p>
+
+    <p class="desc">This can be used to make dynamic variables or
+    bound handlers available in the worker threads.
+    <code>wrapper</code> should be either <code>nil</code>, for no
+    wrapping, or a function that, given a function argument, calls its
+    argument in the new environment. Works best with <a
+    href="#with-local-thread-pool">local</a> thead pools.</p>
+
+    <p class="def" id="finish-tasks">
+      <span>function</span>
+      finish-tasks ()
+    </p>
+
+    <p class="desc">Takes the current threads out of the pool, waits
+    for the task queue to empty, and then for the threads to finish
+    executing any tasks they might be busy with. This is intended to
+    be called when shutting down &#x2015; killing the threads might
+    cause some tasks to be aborted, which could result in data loss.
+    If you join every task you create, this should not be necessary.
+    Note that if you call this function while other threads are still
+    creating tasks, it might never return.</p>
+
+    <p class="def" id="with-local-thread-pool">
+      <span>macro</span>
+      with-local-thread-pool (&amp;key size on-unwind worker-environment)
+    </p>
+
+    <p class="desc">Run <code>body</code> with a fresh thread pool. If
+    <code>on-unwind</code> is <code>:wait</code> (the default), the
+    form will wait for all local tasks to finish before returning. If
+    it is <code>:leave</code>, it will return while threads are still
+    working. Given <code>:stop</code> or <code>:destroy</code>, the
+    threads will be stopped at the end of the body. With
+    <code>:stop</code>, they will first finish their current task (if
+    any), with <code>:destroy</code>, they will be brutally destroyed
+    and might leak resources, leave stuff in inconsistent state,
+    etcetera. <code>worker-environment</code> can be used to give the
+    workers in the local pool a specific dynamic <a
+    href="#set-worker-environment">environment</a>.</p>
+
+  </body>
+
+</html>

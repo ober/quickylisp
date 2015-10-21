@@ -1,0 +1,15 @@
+.. _manual-contents:
+
+Руководство
+===========
+
+.. toctree::
+   :maxdepth: 1
+
+   routes
+   modules
+   view
+   special-pages
+   decorators
+   daemon
+   slime

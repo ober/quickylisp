@@ -1,0 +1,23 @@
+language: common-lisp
+
+os:
+  - linux
+  - osx
+
+env:
+  matrix:
+    - LISP=sbcl
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libev-dev; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install libev; fi
+
+install:
+  - curl -L https://raw.githubusercontent.com/snmsts/roswell/master/scripts/install-for-ci.sh | sh
+  # for thread-support on OS X
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ros install sbcl; fi
+
+script:
+  - ros -s prove
+        -e '(or (prove:run :woo-test)
+                (uiop:quit -1))'

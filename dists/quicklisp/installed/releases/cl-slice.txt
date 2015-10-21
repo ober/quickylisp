@@ -1,0 +1,1 @@
+dists/quicklisp/software/cl-slice-20131111-git/

@@ -1,0 +1,28 @@
+(:author "Brit Butler"
+ :deploy-dir "/home/git/blog/"
+ :domain "http://blog.redlinernotes.com"
+ :feeds ("lisp")
+ :plugins ((analytics :tracking-code "foo")
+           (disqus :shortname "my-site-name")
+           ; (incremental)  ;; *Remove comment to enable incremental builds.
+           (mathjax)
+           (sitemap)
+           (static-pages)
+           ; (versioned)    ;; *Remove comment to enable symlinked, timestamped deploys.
+          )
+ :routing ((:post           "posts/~a")
+           (:tag-index      "tag/~a")
+           (:month-index    "date/~a")
+           (:numeric-index  "~d")
+           (:feed           "~a.xml")
+           (:tag-feed       "tag/~a.xml"))
+ :sitenav ((:url "http://redlinernotes.com/" :name "Home")
+           (:url "http://twitter.com/redline6561" :name "Twitter")
+           (:url "http://github.com/redline6561" :name "Code")
+           (:url "http://soundcloud.com/redlinernotes" :name "Music")
+           (:url "http://redlinernotes.com/docs/talks/" :name "Talks"))
+ :staging-dir "/tmp/coleslaw/"
+ :title "Improved Means for Achieving Deteriorated Ends"
+ :theme "hyde")
+
+;; * Prerequisites described in plugin docs.

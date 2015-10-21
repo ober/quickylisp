@@ -1,0 +1,1 @@
+dists/quicklisp/software/cl-irc-0.9.1/test/cl-irc-test.asd

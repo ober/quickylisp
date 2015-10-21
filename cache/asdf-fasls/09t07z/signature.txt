@@ -1,0 +1,4 @@
+lisp-implementation-type: CLISP
+lisp-implementation-version: 2.49 (2010-07-07) (built 3647319820) (memory 3647319934)
+machine-type: X86_64
+machine-version: X86_64

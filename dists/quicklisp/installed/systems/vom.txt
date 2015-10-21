@@ -1,0 +1,1 @@
+dists/quicklisp/software/vom-20141217-git/vom.asd

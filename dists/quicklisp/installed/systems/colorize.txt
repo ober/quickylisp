@@ -1,0 +1,1 @@
+dists/quicklisp/software/colorize-20130720-git/colorize.asd

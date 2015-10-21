@@ -1,0 +1,32 @@
+fare-mop has a few simple utilities relying on the MOP.
+It depends on CLOSER-MOP for portable MOP access.
+
+The main utilities are:
+
+SIMPLE-PRINT-OBJECT-MIXIN
+	class mixin to give you a useful PRINT-OBJECT method for free
+
+SIMPLE-PRINT-OBJECT
+	a simple PRINT-OBJECT function you can use it without the mixin
+        (useful when you don't want to change the class hierarchy of
+        some library you're using, but still want to simply inspect objects
+        and/or define a PRINT-OBJECT method on them).
+
+COLLECT-SLOTS
+	a utility used by the above function, to collect a p-list
+        describing the slots bound in an object
+
+SLOTS-TO-PRINT
+	a way to customize which slots get printed by SIMPLE-PRINT-OBJECT-MIXIN
+
+
+Other utilities include:        
+
+REMAKE-OBJECT
+	a utility for "copying" objects by calling make-instance with
+        the "same" initialization arguments as an original objects,
+        plus overriding keyword arguments.
+        Useful for experimenting with a pure functional OO style.
+        Not for use where performance is important.
+
+See documentation strings for details.

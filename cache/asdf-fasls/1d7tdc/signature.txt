@@ -1,0 +1,4 @@
+lisp-implementation-type: International Allegro CL [master]
+lisp-implementation-version: 9.0 [Mac OS X (Intel)] (Jun 21, 2015 2:54)
+machine-type: x86
+machine-version: x86_64

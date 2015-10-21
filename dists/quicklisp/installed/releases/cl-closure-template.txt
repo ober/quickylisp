@@ -1,0 +1,1 @@
+dists/quicklisp/software/cl-closure-template-20141217-git/

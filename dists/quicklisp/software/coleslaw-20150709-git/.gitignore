@@ -1,0 +1,7 @@
+*~
+*.fasl
+*.dx??fsl
+ignore/
+generated/
+.curr
+.prev

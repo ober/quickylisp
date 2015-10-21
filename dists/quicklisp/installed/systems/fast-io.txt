@@ -1,0 +1,1 @@
+dists/quicklisp/software/fast-io-20150608-git/fast-io.asd

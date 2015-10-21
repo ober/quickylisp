@@ -1,0 +1,41 @@
+########## CONFIGURATION VALUES ##########
+
+TMP_GIT_CLONE=$HOME/tmp/improvedmeans/
+
+# Set LISP to your preferred implementation. The following
+# implementations are currently supported:
+#   * sbcl
+#   * ccl
+LISP=sbcl
+
+########## DON'T EDIT ANYTHING BELOW THIS LINE ##########
+
+if cd `dirname "$0"`/..; then
+    GIT_REPO=`pwd`
+    cd $OLDPWD || exit 1
+else
+    exit 1
+fi
+
+git clone $GIT_REPO $TMP_GIT_CLONE || exit 1
+
+while read oldrev newrev refname; do
+    if [ $refname = "refs/heads/master" ]; then
+        echo -e "\n  Master updated. Running coleslaw...\n"
+        if [ $LISP = sbcl ]; then
+            sbcl --eval "(ql:quickload 'coleslaw)" \
+                 --eval "(coleslaw:main \"$TMP_GIT_CLONE\" \"$oldrev\")" \
+                 --eval "(uiop:quit)"
+        elif [ $LISP = ccl ]; then
+            ccl -e "(ql:quickload 'coleslaw)" \
+                -e "(coleslaw:main \"$TMP_GIT_CLONE\" \"$oldrev\")" \
+                -e "(uiop:quit)"
+        else
+            echo -e "$LISP is not a supported lisp dialect at this time. Exiting.\n"
+            exit 1
+        fi
+    fi
+done
+
+rm -rf $TMP_GIT_CLONE
+exit

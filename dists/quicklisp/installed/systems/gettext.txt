@@ -1,0 +1,1 @@
+dists/quicklisp/software/gettext-20131003-git/gettext.asd

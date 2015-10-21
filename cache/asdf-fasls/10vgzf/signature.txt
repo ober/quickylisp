@@ -1,0 +1,4 @@
+lisp-implementation-type: LispWorks
+lisp-implementation-version: 7.0.0
+machine-type: x86
+machine-version: 486

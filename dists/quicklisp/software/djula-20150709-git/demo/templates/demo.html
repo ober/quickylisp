@@ -1,0 +1,67 @@
+<html>
+    <head>
+        <title>Djula demo</title>
+        <script src="prettify.js"></script>
+	<script src="lang-lisp.js"></script>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="simplegrid.css">
+	<link rel="stylesheet" href="prettify.css">
+    </head>
+    <body onload="prettyPrint()">
+        <div class="grid grid-pad">
+            <div class="col-1-1">
+                <div class="content">
+                    <h3>Errors</h3>
+                    <ul>
+                        <li><a href="/error">Error</a></li>
+                        <li><a href="/error-uncatched">Unhandled error</a></li>
+                        <li><a href="/fancy-error">Fancy error</a></li>
+			<li><a href="/debug">Debugging</a></li>
+			<li><a href="/fancy-debug">Fancy debugging</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+	<div class="grid grid-pad">
+            <div class="col-1-1">
+                <div class="content">
+                    <h3>Translation</h3>
+                    <ul>
+                        <li><a href="/locale?lang=es">cl-locale spanish</a></li>
+                        <li><a href="/locale?lang=en">cl-locale english</a></li>
+                        <li><a href="/gettext?lang=es">gettext spanish</a></li>
+			<li><a href="/gettext?lang=it">gettext italian</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% for demo in demos %}
+        <div class="grid grid-pad">
+            <div class="col-1-1">
+                <div class="content">
+                    <h3>{{ demo.title }}</h3>
+                </div>
+            </div>
+            {% for example in demo.examples %}
+            <div class="grid example">
+                <div class="col-1-3">
+                    <code class="prettyprint">
+                        {{ example.source }}
+                    </code>
+                </div>
+                <div class="col-1-3">
+                    <code class="prettyprint">
+                        {{ example.args }}
+                    </code>
+                </div>
+                <div class="col-1-3">
+                    <code class="prettyprint">
+                        {{ example.output }}
+                    </code>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </body>
+</html>
